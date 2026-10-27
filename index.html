@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ตามล่าหาที่เรียน (University Quest)</title>
+<style>
+:root{--bg:#faf7f2;--fg:#2a2622;--mut:#6f675e;--card:#fff;--bd:#e4ddd2;--ac:#d9622b;--ac2:#fbe6da;--ok:#2f7d5b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a18;--fg:#f1ebe3;--mut:#a79d90;--card:#262320;--bd:#3a352f;--ac:#f08a57;--ac2:#3a2a20;--ok:#6cc79d}}
+:root[data-theme="dark"]{--bg:#1c1a18;--fg:#f1ebe3;--mut:#a79d90;--card:#262320;--bd:#3a352f;--ac:#f08a57;--ac2:#3a2a20;--ok:#6cc79d}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 "Noto Sans Thai","Sarabun",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.25rem;margin:1.2em 0 .4em}h3{font-size:1.05rem;margin:.8em 0 .3em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;margin:14px 0}
+.mut{color:var(--mut);font-size:.9rem}
+.bar{height:8px;background:var(--bd);border-radius:8px;overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--fg);border:1.5px solid var(--bd);border-radius:12px;padding:12px 14px;margin:8px 0;font:inherit;cursor:pointer}
+.opt:hover,.opt.sel{border-color:var(--ac);background:var(--ac2)}
+.opt.unsure{color:var(--mut);border-style:dashed}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer;margin:6px 6px 0 0}
+.btn.ghost{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
+input[type=text],textarea,select{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--bd);border-radius:10px;padding:9px 11px;margin:4px 0 10px}
+.row{display:flex;align-items:center;gap:10px;margin:7px 0}.row span{width:110px;font-size:.9rem}.row .bar{flex:1;margin:0}
+.tag{display:inline-block;background:var(--ac2);color:var(--ac);border-radius:20px;padding:2px 12px;margin:3px 4px 3px 0;font-size:.9rem}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{border:1px solid var(--bd);padding:6px;text-align:center}td:first-child{text-align:left}td select,td input{margin:0;padding:5px}
+a{color:var(--ac)}ul{padding-left:1.2em}
+.note{border-left:4px solid var(--ok);padding:8px 12px;background:var(--ac2);border-radius:0 10px 10px 0;font-size:.92rem}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var CL={tech:"เทคโนโลยีและข้อมูล",sci:"วิทย์และสุขภาพ",people:"คนและสังคม",art:"ศิลปะและการออกแบบ",biz:"ธุรกิจและการสร้างสิ่งใหม่",nat:"ธรรมชาติและสิ่งแวดล้อม",lang:"ภาษา สื่อ และการสื่อสาร",build:"การสร้างและแก้ปัญหาเชิงวิศวกรรม"};
+var FG={
+tech:["วิทยาการคอมพิวเตอร์ / วิทยาศาสตร์ข้อมูล","ปัญญาประดิษฐ์ / ความมั่นคงไซเบอร์","เทคโนโลยีสารสนเทศ / สื่อดิจิทัล"],
+sci:["แพทยศาสตร์และสหเวชศาสตร์","เภสัชศาสตร์ / พยาบาล / สาธารณสุข","วิทยาศาสตร์ชีวภาพ / ชีวการแพทย์"],
+people:["จิตวิทยา / สังคมสงเคราะห์","ครุศาสตร์ / ศึกษาศาสตร์","รัฐศาสตร์ / นิติศาสตร์ / สังคมศาสตร์"],
+art:["สถาปัตยกรรม / การออกแบบ","นิเทศศาสตร์ / ภาพยนตร์ / ดิจิทัลอาร์ต","ศิลปกรรมและดนตรี"],
+biz:["บริหารธุรกิจ / ผู้ประกอบการ","เศรษฐศาสตร์ / การเงิน / บัญชี","การตลาด / การจัดการนวัตกรรม"],
+nat:["วิทยาศาสตร์สิ่งแวดล้อม / ป่าไม้","เกษตรและอาหาร / ประมง","ภูมิศาสตร์ / ธรณีวิทยา"],
+lang:["อักษรศาสตร์ / ภาษาต่างประเทศ","วารสารศาสตร์ / การสื่อสารมวลชน","ภาษาและวัฒนธรรมศึกษา"],
+build:["วิศวกรรมศาสตร์ (สาขาที่หลากหลาย)","วิทยาศาสตร์วัสดุ / หุ่นยนต์ / เมคคาทรอนิกส์","สถาปัตยกรรมและการก่อสร้าง"]};
+var Q=[
+["ช่วงว่าง ๆ คุณมักทำอะไรจนลืมเวลา?",1,[["เล่น/สร้างเกม แอป หรือเว็บ","tech,build"],["อ่านหรือดูเรื่องวิทยาศาสตร์ สุขภาพ ร่างกาย","sci"],["คุยหรือช่วยเพื่อนแก้ใจ","people"],["วาด ถ่ายภาพ ตัดต่อ ออกแบบ","art"],["ขายของ วางแผนหารายได้","biz"],["ออกไปข้างนอก ดูต้นไม้ สัตว์ ท้องฟ้า","nat"],["เขียน อ่านนิยาย เรียนภาษา ทำคอนเทนต์","lang"]]],
+["ผลงานแบบไหนที่คุณอยากเห็นว่าตัวเองสร้างได้?",1,[["ระบบหรือโปรแกรมที่คนใช้งานจริง","tech"],["สิ่งประดิษฐ์ เครื่องจักร สิ่งก่อสร้าง","build"],["งานวิจัยหรือการค้นพบใหม่","sci,nat"],["งานออกแบบหรือผลงานสร้างสรรค์","art"],["ธุรกิจหรือโครงการของตัวเอง","biz"],["กิจกรรมที่ทำให้คนมีชีวิตดีขึ้น","people,sci"]]],
+["คุณชอบทำงานกับอะไรมากที่สุด?",1,[["คนและความรู้สึกของคน","people"],["ข้อมูลและตัวเลข","tech,biz"],["ธรรมชาติและสิ่งมีชีวิต","nat,sci"],["เทคโนโลยีและเครื่องมือ","tech,build"],["ศิลปะและไอเดียสร้างสรรค์","art,lang"],["โจทย์ปัญหาที่ต้องคิดหาทางออก","build,tech"]]],
+["วิชาที่คุณชอบเรียนที่สุด?",1,[["คณิตศาสตร์","tech,build,biz"],["วิทยาศาสตร์ (ฟิสิกส์/เคมี/ชีวะ)","sci,build,nat"],["ภาษาไทย/อังกฤษ/ภาษาอื่น","lang,people"],["สังคมศึกษา/ประวัติศาสตร์","people,lang"],["ศิลปะ/ดนตรี/การออกแบบ","art"],["คอมพิวเตอร์/เทคโนโลยี","tech"]]],
+["วิชาที่คุณเรียนแล้วรู้สึกว่า 'ไปได้ดี'?",1,[["คณิตศาสตร์","tech,build,biz"],["วิทยาศาสตร์","sci,build,nat"],["ภาษา","lang"],["สังคม","people"],["ศิลปะหรือทักษะลงมือทำ","art,build"]]],
+["วิชาหรือทักษะที่อยากพัฒนาเพิ่ม?",0,[["คณิตศาสตร์/ตรรกะ",""],["ภาษาอังกฤษ",""],["การเขียนและการนำเสนอ",""],["วิทยาศาสตร์",""],["ทักษะคอมพิวเตอร์",""]]],
+["คุณเรียนรู้ได้ดีที่สุดเมื่อ...",0,[["ได้ลงมือทำโปรเจกต์จริง",""],["ฟังบรรยายและอ่านเอง",""],["ได้ทำงานเป็นทีม",""],["ได้ฝึกงาน/ลงพื้นที่",""]]],
+["ผลงานหรือเรื่องที่คุณภูมิใจที่สุดคือแบบไหน?",1,[["ชนะหรือได้รางวัลวิชาการ/แข่งขัน","sci,tech,build"],["ช่วยคนอื่นหรือทำกิจกรรมเพื่อสังคม","people,nat"],["ทำงานศิลปะ/ดนตรี/คอนเทนต์","art,lang"],["ทำโปรเจกต์หรือสร้างอะไรขึ้นมาเอง","build,tech,biz"],["เป็นผู้นำกลุ่มหรือชมรม","biz,people"]]],
+["จุดแข็งที่คนรอบตัวมักพูดถึง?",1,[["คิดวิเคราะห์เป็นระบบ","tech,sci,build"],["เข้าใจและรับฟังคน","people"],["คิดนอกกรอบ","art,biz"],["ขยันและละเอียด","sci,nat"],["พูดและเล่าเรื่องเก่ง","lang,biz"]]],
+["อยากเห็นอะไรเกิดขึ้นในสังคม?",1,[["คนสุขภาพดีและเข้าถึงการรักษา","sci"],["การศึกษาที่เท่าเทียม","people"],["สิ่งแวดล้อมที่ดีขึ้น","nat"],["เทคโนโลยีที่ช่วยชีวิตคน","tech,build"],["เศรษฐกิจและอาชีพที่มั่นคง","biz"],["วัฒนธรรมและเสียงของผู้คนถูกได้ยิน","lang,art"]]],
+["เพื่อน ๆ มักมาขอให้คุณช่วยเรื่อง...",1,[["ติวหรืออธิบายเนื้อหา","sci,people"],["ซ่อม/ตั้งค่า/แก้ปัญหาเครื่อง","tech,build"],["ออกแบบโปสเตอร์ สไลด์ รูป","art"],["เขียนหรือแปลข้อความ","lang"],["วางแผนกิจกรรม/ระดมทุน","biz,people"],["ปรึกษาเรื่องใจ","people"]]],
+["บรรยากาศการเรียนแบบไหนที่คุณอยากได้?",0,[["ห้องแล็บ/เวิร์กช็อป",""],["สตูดิโอ/พื้นที่สร้างสรรค์",""],["ห้องเรียนขนาดเล็กคุยกันได้",""],["ลงพื้นที่จริง/ชุมชน",""]]],
+["งบค่าใช้จ่ายด้านการเรียนตอนนี้เป็นอย่างไร?",0,[["ต้องประหยัดมาก อยากหาทุน",""],["ปานกลาง พอไหว",""],["ค่อนข้างยืดหยุ่น",""]]],
+["ระยะทางจากบ้านที่ยอมรับได้?",0,[["อยู่ใกล้บ้านหรือในจังหวัดเดิม",""],["ภูมิภาคเดียวกัน",""],["ไปไกลได้ทั่วประเทศ",""]]],
+["ตอนนี้คุณรู้สึกกับการเลือกคณะอย่างไร?",0,[["มีคณะในใจแล้ว",""],["มีสองสามทางที่ชอบ",""],["ยังไม่รู้เลย แต่อยากลอง",""],["กังวลเรื่องคะแนน",""]]]
+];
+var S={step:"intro",grade:"",i:0,ans:[],extra:{mbti:"",via:"",wheel:"",fav:"",work:"",avoid:""},cmp:[]};
+var CR=["สนใจ","ตรงจุดแข็ง","อยากเรียนจริง","พร้อมวิชาการ","ค่าใช้จ่าย/ทุน","ระยะทาง","เตรียมตัวได้"];
+function $(h){document.getElementById("app").innerHTML=h;window.scrollTo(0,0)}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function go(s){S.step=s;draw()}
+function draw(){var f=window["v_"+S.step];f()}
+function v_intro(){$('<h1>🗺️ ตามล่าหาที่เรียน</h1><p class="mut">University Quest — ค้นพบตัวเอง เปิดแผนที่อนาคต</p><div class="card"><p>เกมนี้ไม่ได้บอกว่าคุณต้องเป็นใคร แต่ช่วยให้เห็นว่ามีทางเลือกอะไรบ้าง และเริ่มเดินสำรวจอย่างไร</p><ul><li>ตอบ 15 ข้อ ใช้เวลา 3–5 นาที ทุกข้อมี “ยังไม่แน่ใจ”</li><li>เติมผล MBTI / VIA / กงล้อสี่ทิศได้ ถ้ามี (ไม่บังคับ)</li><li>ได้แผนที่ตัวตน ตารางเปรียบเทียบ และแผน 30 วัน</li></ul><p class="mut">ผลลัพธ์เป็นสมมติฐานเบื้องต้นสำหรับการสำรวจ ไม่ใช่การวินิจฉัยหรือคำตัดสินอนาคต ไม่มีคำตอบถูกหรือผิด ข้อมูลที่ตอบอยู่บนเครื่องคุณเท่านั้น</p></div><h3>ตอนนี้คุณอยู่ชั้นไหน?</h3>'+["ม.4","ม.5","ม.6","ยังไม่แน่ใจ"].map(function(g){return '<button class="opt" onclick="S.grade=\''+g+'\';S.i=0;go(\'quiz\')">'+g+'</button>'}).join(""))}
+function v_quiz(){var q=Q[S.i],p=Math.round(S.i/15*100);var o=q[2].map(function(x,k){return '<button class="opt'+(S.ans[S.i]===k?' sel':'')+'" onclick="pick('+k+')">'+x[0]+'</button>'}).join("");
+$('<div class="mut">ข้อ '+(S.i+1)+' / 15</div><div class="bar"><i style="width:'+p+'%"></i></div><h2>'+q[0]+'</h2>'+o+'<button class="opt unsure'+(S.ans[S.i]===-1?' sel':'')+'" onclick="pick(-1)">🤔 ยังไม่แน่ใจ</button>'+(S.i>0?'<button class="btn ghost" onclick="S.i--;draw()">← ย้อนกลับ</button>':''))}
+function pick(k){S.ans[S.i]=k;if(S.i<14){S.i++;draw()}else go("extra")}
+function v_extra(){var e=S.extra;$('<h2>🎒 ข้อมูลเสริม (ไม่บังคับ)</h2><p class="mut">ข้ามได้เลย ผลแบบทดสอบเหล่านี้ใช้เป็นข้อมูลประกอบการสำรวจ ไม่ใช่ตัวกำหนดอนาคต</p><div class="card"><label>MBTI (ถ้าเคยทำ)</label><input type="text" id="e1" value="'+esc(e.mbti)+'"><label>VIA Character Strengths (จุดแข็งเด่น ๆ)</label><input type="text" id="e2" value="'+esc(e.via)+'"><label>กงล้อสี่ทิศ</label><input type="text" id="e3" value="'+esc(e.wheel)+'"><label>คณะ/อาชีพที่สนใจอยู่แล้ว</label><input type="text" id="e4" value="'+esc(e.fav)+'"><label>กิจกรรมหรือผลงานที่เคยทำ</label><input type="text" id="e5" value="'+esc(e.work)+'"><label>สิ่งที่ไม่อยากเจอในการเรียน/ทำงาน</label><input type="text" id="e6" value="'+esc(e.avoid)+'"></div><button class="btn" onclick="saveEx()">สร้างแผนที่ตัวตน →</button>')}
+function saveEx(){var k=["mbti","via","wheel","fav","work","avoid"];k.forEach(function(n,i){S.extra[n]=document.getElementById("e"+(i+1)).value});go("map")}
+function calc(){var sc={};Object.keys(CL).forEach(function(k){sc[k]=0});Q.forEach(function(q,i){var a=S.ans[i];if(q[1]&&a>=0&&a!=null){q[2][a][1].split(",").forEach(function(t){if(t)sc[t]++})}});return sc}
+function pickTxt(i){var a=S.ans[i];return a>=0&&a!=null?Q[i][2][a][0]:"ยังไม่แน่ใจ"}
+function ranked(){var sc=calc();return Object.keys(sc).sort(function(a,b){return sc[b]-sc[a]}).filter(function(k){return sc[k]>0})}
+function v_map(){var sc=calc(),mx=Math.max.apply(null,Object.values(sc))||1,r=ranked(),top=r.slice(0,Math.min(5,Math.max(3,r.length)));
+var bars=Object.keys(CL).map(function(k){return '<div class="row"><span>'+CL[k]+'</span><div class="bar"><i style="width:'+Math.round(sc[k]/mx*100)+'%"></i></div></div>'}).join("");
+var un=S.ans.filter(function(a){return a===-1}).length;
+$('<h2>🧭 แผนที่ตัวตนของคุณ ('+S.grade+')</h2><div class="note">นี่คือสมมติฐานเบื้องต้นจากคำตอบ 15 ข้อ ไม่ใช่การวินิจฉัยบุคลิกภาพหรือคำตัดสินอนาคต ลองดูว่า “ใช่/ไม่ใช่” ตรงไหน</div><div class="card"><h3>1. ความสนใจหลัก</h3>'+bars+'<h3>2. จุดแข็งที่มีข้อมูลสนับสนุน</h3><p>จากคำตอบ: '+esc(pickTxt(8))+' · ผลงานที่ภูมิใจ: '+esc(pickTxt(7))+' · เพื่อนมักขอให้ช่วย: '+esc(pickTxt(10))+'</p><h3>3. คุณค่าที่ให้ความสำคัญ</h3><p>'+esc(pickTxt(9))+'</p><h3>4. รูปแบบการเรียนที่อาจเหมาะ</h3><p>'+esc(pickTxt(6))+' · บรรยากาศ: '+esc(pickTxt(11))+'</p><h3>5. สิ่งที่ยังต้องค้นหาหรือทดลองเพิ่ม</h3><p>'+(un?'มี '+un+' ข้อที่ยังไม่แน่ใจ ซึ่งเป็นเรื่องปกติ ลองทดลองกิจกรรมจริงเพื่อหาคำตอบ':'ลองทดลองเรียนเนื้อหาจริงของสาขาที่สนใจ เพื่อเช็กว่าอยากเรียนจริงไหม')+(S.extra.avoid?' · สิ่งที่ไม่อยากเจอ: '+esc(S.extra.avoid):'')+'</p><h3>6. กลุ่มสาขาที่น่าลองสำรวจ</h3>'+(top.length?top.map(function(k){return '<div style="margin:8px 0"><b>'+CL[k]+'</b><br>'+FG[k].map(function(f){return '<span class="tag">'+f+'</span>'}).join("")+'</div>'}).join(""):'<p>ยังข้อมูลไม่พอ ลองย้อนไปตอบใหม่ หรือสำรวจกลุ่มใดก็ได้ที่ดึงดูดคุณ</p>')+'<p class="mut">มีสาขานอกลิสต์นี้อีกมาก ลองสำรวจสาขาที่ไม่เคยนึกถึงด้วย</p></div><button class="btn" onclick="go(\'find\')">ออกตามล่าหลักสูตร →</button><button class="btn ghost" onclick="S.i=0;go(\'quiz\')">ตอบใหม่</button>')}
+function summary(){var r=ranked().slice(0,4).map(function(k){return CL[k]}).join(", ");return "ฉันเล่นเกม University Quest ("+S.grade+") ผลสรุปเบื้องต้น: กลุ่มที่สนใจ = "+r+"; ผลงานที่ภูมิใจ = "+pickTxt(7)+"; จุดแข็ง = "+pickTxt(8)+"; งบ = "+pickTxt(12)+"; ระยะทาง = "+pickTxt(13)+"; คณะที่สนใจแล้ว = "+(S.extra.fav||"-")+"; MBTI/VIA/กงล้อ = "+[S.extra.mbti,S.extra.via,S.extra.wheel].filter(Boolean).join(" / ")+". ช่วยค้นหาอย่างน้อย 10 หลักสูตรจากมหาวิทยาลัยรัฐอย่างน้อย 4 แห่ง พร้อมลิงก์ทางการที่ตรวจสอบแล้ว"}
+function v_find(){var L=[["TCAS กลาง (ค้นหาหลักสูตรและกำหนดการ)","https://www.mytcas.com"],["จุฬาลงกรณ์มหาวิทยาลัย","https://www.chula.ac.th"],["มหาวิทยาลัยธรรมศาสตร์","https://www.tu.ac.th"],["มหาวิทยาลัยเกษตรศาสตร์","https://www.ku.ac.th"],["มหาวิทยาลัยเชียงใหม่","https://www.cmu.ac.th"],["มหาวิทยาลัยขอนแก่น","https://www.kku.ac.th"],["มหาวิทยาลัยสงขลานครินทร์","https://www.psu.ac.th"]];
+$('<h2>🔎 ภารกิจตามล่าคณะและหลักสูตร</h2><div class="note"><b>ข้อจำกัดตรง ๆ:</b> แอปนี้ทำงานออฟไลน์ ไม่ได้ค้นเว็บ จึงไม่แต่งชื่อหลักสูตร ค่าเล่าเรียน เกณฑ์ หรือกำหนดการให้ — ข้อมูลไม่สมบูรณ์ — โปรดตรวจสอบจากเว็บไซต์ทางการ</div><div class="card"><h3>วิธีทำให้ได้รายการ 10+ หลักสูตรที่ตรวจสอบแล้ว</h3><p>คัดลอกสรุปนี้ กลับไปวางในแชตกับ Claude แล้วให้ค้นข้อมูลจริงจากเว็บไซต์ทางการ พร้อมลิงก์หลักสูตรและลิงก์ประกาศรับสมัครแยกกัน และระบุวันที่ตรวจสอบ</p><textarea id="sm" rows="6" readonly>'+esc(summary())+'</textarea><button class="btn" onclick="document.getElementById(\'sm\').select();try{document.execCommand(\'copy\')}catch(e){}">คัดลอกสรุป</button></div><div class="card"><h3>ช่องทางทางการสำหรับตรวจสอบต่อ</h3><ul>'+L.map(function(x){return '<li><a href="'+x[1]+'" target="_blank" rel="noopener">'+x[0]+'</a></li>'}).join("")+'</ul><p class="mut">นี่เป็นหน้าแรกของเว็บไซต์ทางการ ควรไปต่อที่หน้าหลักสูตรและประกาศรับสมัครของแต่ละคณะ และไม่ควรมองข้ามมหาวิทยาลัยเอกชนหรือสถาบันอื่นที่มีหลักสูตรตรงใจ</p></div><button class="btn" onclick="go(\'cmp\')">เปรียบเทียบทางเลือก →</button>')}
+function v_cmp(){if(!S.cmp.length)S.cmp=[{n:"",g:"A",s:[3,3,3,3,3,3,3]},{n:"",g:"B",s:[3,3,3,3,3,3,3]},{n:"",g:"C",s:[3,3,3,3,3,3,3]}];
+var rows=S.cmp.map(function(c,i){return '<tr><td><input type="text" placeholder="มหาวิทยาลัย/หลักสูตร" value="'+esc(c.n)+'" onchange="S.cmp['+i+'].n=this.value"></td>'+c.s.map(function(v,j){return '<td><select onchange="S.cmp['+i+'].s['+j+']=+this.value;tot()">'+[1,2,3,4,5].map(function(n){return '<option'+(n==v?' selected':'')+'>'+n+'</option>'}).join("")+'</select></td>'}).join("")+'<td id="t'+i+'"></td><td><select onchange="S.cmp['+i+'].g=this.value"><option'+(c.g=="A"?' selected':'')+'>A</option><option'+(c.g=="B"?' selected':'')+'>B</option><option'+(c.g=="C"?' selected':'')+'>C</option></select></td></tr>'}).join("");
+$('<h2>⚖️ ตารางเปรียบเทียบ</h2><p class="mut">ใส่ชื่อหลักสูตรที่ได้จากขั้นก่อนหน้า แล้วให้คะแนน 1–5 ตามเกณฑ์ของคุณเอง คะแนนรวมใช้ประกอบการคิด ไม่ใช่คำตัดสิน</p><div class="card scroll"><table><tr><th>ตัวเลือก</th>'+CR.map(function(c){return '<th>'+c+'</th>'}).join("")+'<th>รวม</th><th>กลุ่ม</th></tr>'+rows+'</table><button class="btn ghost" onclick="S.cmp.push({n:\'\',g:\'B\',s:[3,3,3,3,3,3,3]});draw()">+ เพิ่มแถว</button></div><div class="card"><b>A</b> ตัวเลือกที่อยากสำรวจต่อมากที่สุด<br><b>B</b> น่าสนใจและอาจค้นพบความเป็นไปได้ใหม่<br><b>C</b> ตัวเลือกอื่นที่มีคุณค่าและควรเก็บไว้พิจารณา — ไม่ได้ด้อยกว่า A หรือ B<br><span class="mut">ไม่มีใครรับประกันผลการสอบติดหรือความเหมาะสมที่สุดได้</span></div><button class="btn" onclick="go(\'plan\')">แผน 30 วัน →</button>');tot()}
+function tot(){S.cmp.forEach(function(c,i){var e=document.getElementById("t"+i);if(e)e.textContent=c.s.reduce(function(a,b){return a+b},0)})}
+function v_plan(){var g=S.grade,tip=g=="ม.4"?"คุณยังมีเวลา เน้นสำรวจกว้าง ๆ และสะสมผลงาน":g=="ม.5"?"เน้นแคบลงเหลือ 2–3 สาย และเริ่มทำพอร์ต":g=="ม.6"?"เน้นเช็กเกณฑ์ กำหนดการ และเอกสารสมัครให้ชัด":"เริ่มจากสำรวจกว้าง ๆ แล้วค่อยแคบลง";
+var W=[["สัปดาห์ 1: สำรวจ","วันที่ 1–2 อ่านแผนที่ตัวตนแล้วเขียนว่าอะไรที่ใช่/ไม่ใช่","วันที่ 3–5 เลือก 3 กลุ่มสาขา หาคำอธิบายหลักสูตรจากเว็บทางการ","วันที่ 6–7 ดูวิดีโอหรือบทความแนะนำสาขาละ 1 ชิ้น"],["สัปดาห์ 2: ทดลองเรียน","วันที่ 8–10 ลองเรียนบทเรียนฟรีหรือทำโปรเจกต์เล็กของแต่ละสาขา","วันที่ 11–12 ดูรายวิชาในหลักสูตรจริง","วันที่ 13–14 จดว่าอะไรสนุก อะไรเหนื่อย"],["สัปดาห์ 3: ถามคนจริง","วันที่ 15–17 ถามรุ่นพี่หรือคนทำอาชีพนั้น 2–3 คน","วันที่ 18–19 สำรวจทุนการศึกษาและค่าใช้จ่ายจากเว็บทางการ","วันที่ 20–21 ปรึกษาครูแนะแนวหรือผู้ปกครอง"],["สัปดาห์ 4: ตัดสินใจก้าวต่อไป","วันที่ 22–24 ตรวจเกณฑ์รับสมัครและกำหนดการบน mytcas.com","วันที่ 25–27 รวบรวมผลงาน/วางแผนพัฒนาวิชาที่ยังขาด","วันที่ 28–30 กรอกตารางเปรียบเทียบใหม่ แล้วเลือกก้าวถัดไป 1 อย่าง"]];
+$('<h2>📅 แผนเตรียมตัว 30 วัน</h2><div class="note">'+tip+' เริ่มได้เลยโดยไม่ต้องรอให้มั่นใจเต็มร้อย</div>'+W.map(function(w){return '<div class="card"><h3>'+w[0]+'</h3><ul>'+w.slice(1).map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul></div>'}).join("")+'<button class="btn" onclick="go(\'ref\')">คำถามสะท้อนคิด →</button>')}
+function v_ref(){$('<h2>💭 คำถามสะท้อนคิด</h2><div class="card"><ol><li>ถ้าไม่ต้องกังวลเรื่องคะแนนหรือสายตาคนอื่น คุณอยากเรียนอะไรมากที่สุด</li><li>ในผลของเกม ข้อไหนที่คุณรู้สึกว่า “ใช่เลย” และข้อไหน “ไม่ใช่”</li><li>มีเรื่องอะไรที่คุณอยากลองก่อนตัดสินใจ</li><li>ใครคือคนที่คุณจะไปคุยด้วยในสัปดาห์นี้</li><li>ก้าวเล็ก ๆ ก้าวแรกที่ทำได้ภายใน 24 ชั่วโมงคืออะไร</li></ol><textarea rows="4" placeholder="เขียนความคิดของคุณที่นี่ (ไม่ถูกส่งไปไหน)"></textarea></div><p class="mut">ข้อมูลหลักสูตรและกำหนดการเปลี่ยนแปลงได้เสมอ ตรวจสอบจากเว็บไซต์ทางการและปรึกษาครูหรือผู้ปกครองก่อนตัดสินใจ การเลือกเป็นของคุณ 💛</p><button class="btn ghost" onclick="S=Object.assign(S,{ans:[],cmp:[],i:0});go(\'intro\')">เล่นใหม่</button>')}
+draw();
+</script>
+</body>
+</html>
